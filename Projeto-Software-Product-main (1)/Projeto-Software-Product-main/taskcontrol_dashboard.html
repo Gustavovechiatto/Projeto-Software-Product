@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskControl — Board do Projeto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F8FAFC;
+    --sidebar:#111827;
+    --sidebar-hover:#1F2937;
+    --sidebar-text:#9CA3AF;
+    --sidebar-text-active:#FFFFFF;
+    --card:#FFFFFF;
+    --text:#111827;
+    --text-secondary:#64748B;
+    --text-muted:#94A3B8;
+    --border:#E2E8F0;
+    --accent:#6366F1;
+    --accent-dark:#4F46E5;
+    --accent-soft:#EEF2FF;
+    --violet:#8B5CF6;
+    --success:#10B981;
+    --success-soft:#ECFDF5;
+    --danger:#EF4444;
+    --danger-soft:#FEF2F2;
+    --warning:#F59E0B;
+    --warning-soft:#FFFBEB;
+    --gray-soft:#F1F5F9;
+    --radius-lg:16px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --shadow-card:0 1px 2px rgba(17,24,39,0.04), 0 1px 3px rgba(17,24,39,0.04);
+    --shadow-hover:0 8px 24px rgba(17,24,39,0.08), 0 2px 6px rgba(17,24,39,0.06);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{-webkit-font-smoothing:antialiased;}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    min-height:100vh;
+  }
+  ::selection{background:var(--accent-soft);color:var(--accent-dark);}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:248px;
+    flex-shrink:0;
+    background:var(--sidebar);
+    color:var(--sidebar-text);
+    display:flex;
+    flex-direction:column;
+    padding:24px 16px;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:4px 8px 28px;
+  }
+  .brand-mark{
+    width:32px;height:32px;border-radius:9px;
+    background:linear-gradient(135deg,var(--accent),var(--violet));
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:14px;
+    flex-shrink:0;
+  }
+  .brand-name{color:#fff;font-weight:700;font-size:15px;letter-spacing:-0.01em;}
+
+  .nav-section-label{
+    font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+    color:#4B5563;padding:0 12px;margin:18px 0 8px;
+  }
+  .nav-item{
+    display:flex;align-items:center;gap:11px;
+    padding:9px 12px;border-radius:var(--radius-sm);
+    font-size:14px;font-weight:500;color:var(--sidebar-text);
+    transition:background .15s ease, color .15s ease;
+    margin-bottom:2px;
+  }
+  .nav-item svg{flex-shrink:0;opacity:0.85;}
+  .nav-item:hover{background:var(--sidebar-hover);color:#fff;}
+  .nav-item.active{
+    background:var(--accent);
+    color:#fff;
+  }
+  .nav-item.active svg{opacity:1;}
+
+  .sidebar-footer{
+    margin-top:auto;
+    padding:12px;
+    border-top:1px solid #1F2937;
+    display:flex;align-items:center;gap:10px;
+  }
+  .sidebar-footer .avatar{width:32px;height:32px;font-size:12px;}
+  .sidebar-footer-text p{font-size:13px;color:#fff;font-weight:500;line-height:1.3;}
+  .sidebar-footer-text span{font-size:11px;color:#6B7280;}
+
+  /* ---------- Main ---------- */
+  .main{
+    flex:1;
+    min-width:0;
+    padding:28px 36px 56px;
+  }
+  .breadcrumbs{
+    font-size:13px;color:var(--text-muted);margin-bottom:16px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .breadcrumbs .current{color:var(--text-secondary);font-weight:500;}
+
+  .header{
+    display:flex;align-items:flex-start;justify-content:space-between;
+    gap:24px;flex-wrap:wrap;margin-bottom:28px;
+  }
+  .header-title-group h1{
+    font-size:26px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px;
+  }
+  .header-title-group p{font-size:14px;color:var(--text-secondary);}
+
+  .header-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+  .search-box{
+    display:flex;align-items:center;gap:8px;
+    background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:8px 12px;
+    min-width:200px;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .search-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .search-box input{border:none;outline:none;font-size:13px;width:100%;background:transparent;color:var(--text);}
+  .search-box input::placeholder{color:var(--text-muted);}
+  .search-box svg{color:var(--text-muted);flex-shrink:0;}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:13px;font-weight:600;
+    padding:8px 14px;border-radius:var(--radius-sm);
+    border:1px solid var(--border);background:var(--card);color:var(--text);
+    transition:background .15s ease, box-shadow .15s ease, transform .1s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{background:var(--gray-soft);}
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{
+    background:var(--accent);border-color:var(--accent);color:#fff;
+    box-shadow:0 1px 2px rgba(79,70,229,0.25);
+  }
+  .btn-primary:hover{background:var(--accent-dark);}
+
+  .sprint-pill{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--accent-soft);color:var(--accent-dark);
+    padding:7px 13px;border-radius:999px;font-size:12.5px;font-weight:600;
+  }
+  .sprint-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-dark);animation:pulse-dot 2s ease-in-out infinite;}
+  @keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  .avatar{
+    width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:600;color:#fff;flex-shrink:0;
+    border:2px solid var(--card);
+  }
+  .avatar-gv{background:var(--accent);}
+  .avatar-ln{background:#F97362;}
+
+  /* ---------- Summary cards ---------- */
+  .summary-grid{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:26px;
+  }
+  .summary-card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:16px 18px;
+    box-shadow:var(--shadow-card);
+    opacity:0;transform:translateY(6px);
+    animation:card-in .4s ease forwards;
+  }
+  .summary-card:nth-child(1){animation-delay:.02s;}
+  .summary-card:nth-child(2){animation-delay:.06s;}
+  .summary-card:nth-child(3){animation-delay:.10s;}
+  .summary-card:nth-child(4){animation-delay:.14s;}
+  .summary-card:nth-child(5){animation-delay:.18s;}
+  @keyframes card-in{to{opacity:1;transform:translateY(0);}}
+
+  .summary-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .summary-icon{
+    width:32px;height:32px;border-radius:9px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .summary-label{font-size:12.5px;color:var(--text-secondary);font-weight:500;}
+  .summary-value{font-size:24px;font-weight:700;letter-spacing:-0.02em;}
+
+  /* ---------- Progress ---------- */
+  .progress-card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:18px 20px;margin-bottom:28px;box-shadow:var(--shadow-card);
+  }
+  .progress-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .progress-top span:first-child{font-size:13.5px;font-weight:600;color:var(--text);}
+  .progress-top span:last-child{font-size:13px;color:var(--text-secondary);}
+  .progress-track{
+    height:9px;background:var(--gray-soft);border-radius:999px;overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;border-radius:999px;width:0%;
+    background:linear-gradient(90deg,var(--accent),var(--violet));
+    transition:width 1.1s cubic-bezier(.22,.9,.3,1);
+  }
+
+  /* ---------- Kanban ---------- */
+  .board-grid{
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;
+    align-items:start;
+  }
+  .column{
+    background:#F1F5F9;
+    border-radius:var(--radius-lg);
+    padding:14px;
+    min-height:120px;
+  }
+  .column-head{margin-bottom:14px;padding:2px 4px 0;}
+  .column-head-top{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  .col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .col-dot.gray{background:#94A3B8;}
+  .col-dot.violet{background:var(--violet);}
+  .col-dot.accent{background:var(--accent);}
+  .col-dot.success{background:var(--success);}
+  .column-title{font-size:13.5px;font-weight:600;color:var(--text);}
+  .column-count{
+    font-size:11.5px;font-weight:600;color:var(--text-secondary);
+    background:#E2E8F0;border-radius:999px;padding:1px 8px;
+  }
+  .column-points{font-size:11.5px;color:var(--text-muted);margin-left:16px;}
+
+  .card-stack{display:flex;flex-direction:column;gap:10px;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:var(--shadow-card);
+    cursor:pointer;
+    transition:box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+    opacity:0;transform:translateY(8px);
+    animation:card-in .35s ease forwards;
+  }
+  .card:hover{
+    box-shadow:var(--shadow-hover);
+    transform:translateY(-2px);
+    border-color:#CBD5E1;
+  }
+  .card:focus-visible{transform:translateY(-2px);box-shadow:var(--shadow-hover);}
+
+  .card-body{padding:13px 14px 0;}
+  .card-toprow{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .card-id{font-size:11px;color:var(--text-muted);font-weight:500;}
+  .card-pts{font-size:11px;color:var(--text-muted);font-weight:600;}
+  .card-tag{
+    font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:6px;
+    display:inline-block;
+  }
+  .tag-violet{background:#F5F3FF;color:#7C3AED;}
+  .tag-accent{background:var(--accent-soft);color:var(--accent-dark);}
+
+  .card-title{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:10px;line-height:1.4;}
+  .card-title.done{text-decoration:line-through;text-decoration-color:var(--text-muted);color:var(--text-secondary);}
+
+  .card-meta-row{
+    display:flex;align-items:center;gap:6px;color:var(--text-secondary);
+    font-size:11.5px;margin-bottom:8px;
+  }
+  .card-meta-row svg{flex-shrink:0;color:var(--text-muted);}
+
+  .card-progress-track{height:5px;background:var(--gray-soft);border-radius:999px;overflow:hidden;margin-bottom:10px;}
+  .card-progress-fill{height:100%;border-radius:999px;background:var(--accent);}
+
+  .card-footer{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:9px 14px;border-top:1px solid var(--border);
+    border-radius:0 0 14px 14px;
+  }
+  .priority-flag{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;color:var(--text-secondary);}
+  .priority-badge{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:6px;
+  }
+  .badge-high{background:var(--danger-soft);color:#B91C1C;}
+  .badge-med{background:var(--warning-soft);color:#B45309;}
+  .badge-done{background:var(--success-soft);color:#047857;}
+
+  .avatar-sm{width:22px;height:22px;font-size:9.5px;}
+  .avatar-group{display:flex;}
+  .avatar-group .avatar-sm:not(:first-child){margin-left:-7px;}
+
+  /* Sprint atual highlight */
+  .col-current{background:#EEF2FF;border:1px solid #E0E7FF;}
+  .card-current{border-color:#C7D2FE;}
+  .card-current .card-footer{background:#F5F7FF;border-top-color:#E0E7FF;}
+  .card-current:hover{border-color:var(--accent);}
+
+  /* Done cards */
+  .card-done{opacity:0.68;}
+  .card-done:hover{opacity:0.9;}
+
+  .mobile-toggle{display:none;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:1080px){
+    .summary-grid{grid-template-columns:repeat(3,1fr);}
+    .board-grid{
+      grid-template-columns:repeat(4,minmax(260px,1fr));
+      overflow-x:auto;
+      padding-bottom:8px;
+    }
+  }
+
+  @media (max-width:860px){
+    .sidebar{
+      position:fixed;left:0;top:0;bottom:0;z-index:40;
+      transform:translateX(-100%);
+      transition:transform .22s ease;
+      width:230px;
+    }
+    .sidebar.open{transform:translateX(0);box-shadow:0 0 0 100vmax rgba(0,0,0,.35);}
+    .mobile-toggle{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:38px;height:38px;border-radius:var(--radius-sm);
+      background:var(--card);border:1px solid var(--border);margin-right:4px;
+    }
+    .main{padding:20px 16px 40px;}
+    .summary-grid{grid-template-columns:repeat(2,1fr);}
+    .header{flex-direction:column;}
+    .header-actions{width:100%;}
+    .search-box{flex:1;min-width:0;}
+  }
+
+  @media (max-width:520px){
+    .summary-grid{grid-template-columns:repeat(2,1fr);}
+    .summary-value{font-size:20px;}
+    .header-title-group h1{font-size:21px;}
+    .board-grid{grid-template-columns:repeat(4,minmax(240px,1fr));}
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-mark">TC</div>
+    <span class="brand-name">TaskControl</span>
+  </div>
+
+  <nav>
+    <a class="nav-item" href="#">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item active" href="#">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M9 9v11"/></svg>
+      Board
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h10"/><path d="M4 18h6"/></svg>
+      Backlog
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h8l-1 8 10-12h-8z"/></svg>
+      Sprints
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+      Relatórios
+    </a>
+
+    <div class="nav-section-label">Sistema</div>
+    <a class="nav-item" href="#">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Configurações
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="avatar avatar-gv">GV</div>
+    <div class="sidebar-footer-text">
+      <p>Gustavo Vechiatto</p>
+      <span>Scrum Master</span>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="breadcrumbs">
+    <span>Projeto</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+    <span class="current">Board</span>
+  </div>
+
+  <div class="header">
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+      <button class="mobile-toggle" id="menuBtn" aria-label="Abrir menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+      </button>
+      <div class="header-title-group">
+        <h1>Board do Projeto</h1>
+        <p>Acompanhe o progresso das atividades e sprints</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <span class="sprint-pill"><span class="dot"></span>Sprint atual · 13–20 abr</span>
+      <label class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Buscar atividade..." aria-label="Buscar atividade">
+      </label>
+      <button class="btn" title="Filtrar cards">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+        Filtros
+      </button>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        Nova atividade
+      </button>
+      <div class="avatar avatar-ln" title="Lucas Netto">LN</div>
+    </div>
+  </div>
+
+  <section class="summary-grid" aria-label="Resumo do projeto">
+    <div class="summary-card">
+      <div class="summary-top">
+        <span class="summary-label">Progresso</span>
+        <div class="summary-icon" style="background:var(--accent-soft);color:var(--accent-dark);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+        </div>
+      </div>
+      <div class="summary-value">25%</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-top">
+        <span class="summary-label">Concluídas</span>
+        <div class="summary-icon" style="background:var(--success-soft);color:#047857;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10-3-3"/></svg>
+        </div>
+      </div>
+      <div class="summary-value">2</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-top">
+        <span class="summary-label">Em andamento</span>
+        <div class="summary-icon" style="background:#F5F3FF;color:#7C3AED;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        </div>
+      </div>
+      <div class="summary-value">1</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-top">
+        <span class="summary-label">Backlog</span>
+        <div class="summary-icon" style="background:var(--gray-soft);color:#475569;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16"/><path d="M4 12h10"/><path d="M4 18h6"/></svg>
+        </div>
+      </div>
+      <div class="summary-value">4</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-top">
+        <span class="summary-label">Pontos totais</span>
+        <div class="summary-icon" style="background:var(--warning-soft);color:#B45309;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></svg>
+        </div>
+      </div>
+      <div class="summary-value">25 pts</div>
+    </div>
+  </section>
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <span>Progresso geral</span>
+      <span>2 de 8 tarefas concluídas</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <section class="board-grid" aria-label="Quadro Kanban">
+
+    <!-- Backlog -->
+    <div class="column">
+      <div class="column-head">
+        <div class="column-head-top">
+          <span class="col-dot gray"></span>
+          <span class="column-title">Backlog</span>
+          <span class="column-count">4</span>
+        </div>
+        <span class="column-points">9 pts</span>
+      </div>
+      <div class="card-stack">
+
+        <div class="card" tabindex="0" style="animation-delay:.02s">
+          <div class="card-body">
+            <div class="card-toprow"><span class="card-id mono">US05</span><span class="card-pts">2 pts</span></div>
+            <div class="card-title">Listar atividades</div>
+          </div>
+          <div class="card-footer">
+            <span class="priority-badge badge-high">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V4h14l-4 5 4 5H6v7z"/></svg>Alta
+            </span>
+          </div>
+        </div>
+
+        <div class="card" tabindex="0" style="animation-delay:.06s">
+          <div class="card-body">
+            <div class="card-toprow"><span class="card-id mono">US06</span><span class="card-pts">2 pts</span></div>
+            <div class="card-title">Marcar como concluída</div>
+          </div>
+          <div class="card-footer">
+            <span class="priority-badge badge-high">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V4h14l-4 5 4 5H6v7z"/></svg>Alta
+            </span>
+          </div>
+        </div>
+
+        <div class="card" tabindex="0" style="animation-delay:.10s">
+          <div class="card-body">
+            <div class="card-toprow"><span class="card-id mono">US07</span><span class="card-pts">3 pts</span></div>
+            <div class="card-title">Editar atividade</div>
+          </div>
+          <div class="card-footer">
+            <span class="priority-badge badge-med">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V4h14l-4 5 4 5H6v7z"/></svg>Média
+            </span>
+          </div>
+        </div>
+
+        <div class="card" tabindex="0" style="animation-delay:.14s">
+          <div class="card-body">
+            <div class="card-toprow"><span class="card-id mono">US08</span><span class="card-pts">2 pts</span></div>
+            <div class="card-title">Excluir atividade</div>
+          </div>
+          <div class="card-footer">
+            <span class="priority-badge badge-med">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V4h14l-4 5 4 5H6v7z"/></svg>Média
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Próxima Sprint -->
+    <div class="column">
+      <div class="column-head">
+        <div class="column-head-top">
+          <span class="col-dot violet"></span>
+          <span class="column-title">Próxima Sprint</span>
+          <span class="column-count">1</span>
+        </div>
+        <span class="column-points">3 pts</span>
+      </div>
+      <div class="card-stack">
+
+        <div class="card" tabindex="0" style="animation-delay:.18s">
+          <div class="card-body">
+            <div class="card-toprow">
+              <span class="card-tag tag-violet">Atividades</span>
+              <span class="card-id mono">US04</span>
+            </div>
+            <div class="card-title">Cadastro de atividade</div>
+            <div class="card-meta-row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+              17 – 24 abr
+            </div>
+            <div class="card-meta-row" style="margin-bottom:12px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4 6h.01"/><path d="M4 12h.01"/><path d="M4 18h.01"/></svg>
+              5 subtarefas técnicas
+            </div>
+          </div>
+          <div class="card-footer">
+            <span class="priority-badge badge-high">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V4h14l-4 5 4 5H6v7z"/></svg>Alta
+            </span>
+            <div class="avatar avatar-sm avatar-ln" title="Lucas Netto">LN</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Sprint Atual -->
+    <div class="column col-current">
+      <div class="column-head">
+        <div class="column-head-top">
+          <span class="col-dot accent"></span>
+          <span class="column-title" style="color:var(--accent-dark);">Sprint Atual</span>
+          <span class="column-count" style="background:#DBE3FF;color:var(--accent-dark);">1</span>
+        </div>
+        <span class="column-points">3 pts</span>
+      </div>
+      <div class="card-stack">
+
+        <div class="card card-current" tabindex="0" style="animation-delay:.22s">
+          <div class="card-body">
+            <div class="card-toprow">
+              <span class="card-tag tag-accent">Onboarding</span>
+              <span class="card-id mono">US03</span>
+            </div>
+            <div class="card-title">Tutorial do programa</div>
+            <div class="card-meta-row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4 6h.01"/><path d="M4 12h.01"/><path d="M4 18h.01"/></svg>
+              6 subtarefas técnicas
+            </div>
+            <div class="card-progress-track"><div class="card-progress-fill" style="width:50%"></div></div>
+            <div class="card-meta-row" style="margin-bottom:12px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+              13 – 20 abr
+            </div>
+          </div>
+          <div class="card-footer">
+            <span class="priority-badge badge-high">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V4h14l-4 5 4 5H6v7z"/></svg>Alta
+            </span>
+            <div class="avatar-group">
+              <div class="avatar avatar-sm avatar-gv" title="Gustavo Vechiatto">GV</div>
+              <div class="avatar avatar-sm avatar-ln" title="Lucas Netto">LN</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Concluído -->
+    <div class="column">
+      <div class="column-head">
+        <div class="column-head-top">
+          <span class="col-dot success"></span>
+          <span class="column-title" style="color:#047857;">Concluído</span>
+          <span class="column-count" style="background:var(--success-soft);color:#047857;">2</span>
+        </div>
+        <span class="column-points">10 pts</span>
+      </div>
+      <div class="card-stack">
+
+        <div class="card card-done" tabindex="0" style="animation-delay:.26s">
+          <div class="card-body">
+            <div class="card-toprow"><span class="card-id mono">US01</span><span class="card-pts">5 pts</span></div>
+            <div class="card-title done">Cadastrar usuário</div>
+          </div>
+          <div class="card-footer">
+            <span class="priority-badge badge-done">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Feito
+            </span>
+            <div class="avatar avatar-sm avatar-gv" title="Gustavo Vechiatto">GV</div>
+          </div>
+        </div>
+
+        <div class="card card-done" tabindex="0" style="animation-delay:.30s">
+          <div class="card-body">
+            <div class="card-toprow"><span class="card-id mono">US02</span><span class="card-pts">5 pts</span></div>
+            <div class="card-title done">Login de usuário</div>
+          </div>
+          <div class="card-footer">
+            <span class="priority-badge badge-done">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Feito
+            </span>
+            <div class="avatar avatar-sm avatar-gv" title="Gustavo Vechiatto">GV</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    requestAnimationFrame(function () {
+      document.getElementById('progressFill').style.width = '25%';
+    });
+  });
+
+  var menuBtn = document.getElementById('menuBtn');
+  var sidebar = document.getElementById('sidebar');
+  if (menuBtn) {
+    menuBtn.addEventListener('click', function () {
+      sidebar.classList.toggle('open');
+    });
+    sidebar.addEventListener('click', function (e) {
+      if (e.target === sidebar) sidebar.classList.remove('open');
+    });
+    document.addEventListener('click', function (e) {
+      if (window.innerWidth <= 860 && sidebar.classList.contains('open') &&
+          !sidebar.contains(e.target) && e.target !== menuBtn && !menuBtn.contains(e.target)) {
+        sidebar.classList.remove('open');
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
