@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0b1220;
+  --foreground: #e7ecf5;
+  --panel: #101a2c;
+  --panel-border: #1f2c44;
+  --brand: #22c55e;
+  --brand-dark: #16a34a;
+  --accent: #38bdf8;
+  --danger: #f87171;
+  --warning: #fbbf24;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: radial-gradient(circle at 15% 0%, #143024 0%, transparent 45%),
+    radial-gradient(circle at 85% 10%, #0f2540 0%, transparent 50%), var(--background);
+  color: var(--foreground);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100dvh;
+}
+
+@layer components {
+  .tc-card {
+    background: color-mix(in oklab, var(--panel) 92%, transparent);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+  }
+
+  .tc-input {
+    width: 100%;
+    border-radius: 0.65rem;
+    border: 1px solid var(--panel-border);
+    background: #0c1729;
+    color: var(--foreground);
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .tc-input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 25%, transparent);
+  }
+
+  .tc-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #9fb0c9;
+    margin-bottom: 0.35rem;
+    display: block;
+  }
+
+  .tc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.65rem;
+    padding: 0.65rem 1.1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: transform 0.1s ease, filter 0.15s ease, opacity 0.15s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .tc-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .tc-btn-primary {
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+    color: #06210f;
+  }
+
+  .tc-btn-primary:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  .tc-btn-ghost {
+    background: transparent;
+    border-color: var(--panel-border);
+    color: var(--foreground);
+  }
+
+  .tc-btn-ghost:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--panel-border) 40%, transparent);
+  }
+
+  .tc-btn-danger {
+    background: linear-gradient(135deg, #f87171, #dc2626);
+    color: #2a0a0a;
+  }
+
+  .tc-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .tc-badge-pendente {
+    background: color-mix(in oklab, var(--warning) 22%, transparent);
+    color: #fcd34d;
+    border: 1px solid color-mix(in oklab, var(--warning) 40%, transparent);
+  }
+
+  .tc-badge-concluida {
+    background: color-mix(in oklab, var(--brand) 22%, transparent);
+    color: #86efac;
+    border: 1px solid color-mix(in oklab, var(--brand) 40%, transparent);
+  }
+
+  .tc-badge-alta {
+    background: color-mix(in oklab, var(--danger) 20%, transparent);
+    color: #fca5a5;
+  }
+
+  .tc-badge-media {
+    background: color-mix(in oklab, var(--accent) 20%, transparent);
+    color: #7dd3fc;
+  }
+
+  .tc-badge-baixa {
+    background: color-mix(in oklab, #94a3b8 20%, transparent);
+    color: #cbd5e1;
+  }
+}
+
+.tc-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.tc-link:hover {
+  text-decoration: underline;
+}
